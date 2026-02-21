@@ -1,0 +1,29 @@
+# Environment and caches
+venv
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+
+# Git and IDE
+.git
+.gitignore
+.idea
+.vscode
+*.swp
+*.swo
+
+# Local env (mount at runtime instead)
+python/src/.env
+
+# Temp and local data
+**/tmp/
+**/*.dbc
+**/*.dbf
+**/*.csv
+
+# Docs and meta (optional: remove if you want them in the image)
+docs/
+*.md
+!README.md

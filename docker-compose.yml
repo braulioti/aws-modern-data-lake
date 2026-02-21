@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    image: aws-modern-datalake:latest
+    container_name: aws-modern-datalake-app
+    environment:
+      START_YEAR: "2025"
+      START_MONTH: "10"
+      END_YEAR: "2025"
+      END_MONTH: "11"
+      STATES: "MG"
+    volumes:
+      - ./tmp:/app/python/tmp
+    restart: "no"

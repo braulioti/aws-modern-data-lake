@@ -3,5 +3,8 @@ python/tmp
 python/src/.env
 venv
 
+### Docker ###
+tmp
+
 ### IDE ###
 .idea
