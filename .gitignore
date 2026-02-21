@@ -1,5 +1,6 @@
 ### Python Files ###
 python/tmp
+python/.env
 venv
 
 ### IDE ###
