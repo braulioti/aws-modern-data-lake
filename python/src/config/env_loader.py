@@ -48,6 +48,21 @@ class EnvLoader:
         return os.getenv("TEMP_DOWNLOAD_PATH")
 
     @property
+    def temp_dbc_path(self) -> str | None:
+        """Return the temporary folder path for DBC files."""
+        return os.getenv("TEMP_DBC_PATH")
+
+    @property
+    def temp_dbf_path(self) -> str | None:
+        """Return the temporary folder path for converted DBF files."""
+        return os.getenv("TEMP_DBF_PATH")
+
+    @property
+    def temp_csv_path(self) -> str | None:
+        """Return the temporary folder path for converted CSV files."""
+        return os.getenv("TEMP_CSV_PATH")
+
+    @property
     def start_year(self) -> str | None:
         """Return the start year of the period (inclusive)."""
         return os.getenv("START_YEAR")

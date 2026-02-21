@@ -2,6 +2,7 @@
 Script that reads the .env file and uses the FTP_DATASUS attribute.
 """
 from config import EnvLoader
+from converter import DBCConverter, DBFConverter
 from dtos import DatasusSIHDTO
 from services.datasus import DatasusSIHService
 
@@ -31,9 +32,15 @@ def main() -> None:
         datasus_sih_service = DatasusSIHService(
             loader.ftp_datasus,
             params=sih_dto,
-            download_folder=loader.temp_download_path,
+            download_folder=loader.temp_dbc_path,
         )
         datasus_sih_service.download()
+
+        if loader.temp_dbc_path and loader.temp_dbf_path:
+            DBCConverter.to_dbf(loader.temp_dbc_path, loader.temp_dbf_path)
+
+        if loader.temp_dbf_path and loader.temp_csv_path:
+            DBFConverter.to_csv(loader.temp_dbf_path, loader.temp_csv_path)
 
 
 if __name__ == "__main__":

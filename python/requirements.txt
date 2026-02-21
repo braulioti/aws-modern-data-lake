@@ -1,1 +1,4 @@
 python-dotenv>=1.0.0
+dbc-to-dbf>=1.0.0
+dbfread>=2.0.0
+pandas>=2.0.0

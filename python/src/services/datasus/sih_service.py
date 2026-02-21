@@ -6,7 +6,7 @@ import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
-from dtos import DatasusSIHDTO
+from dtos import DatasusSIHDTO, FileDownloadStatusDTO
 
 from services.datasus_service import DatasusService
 
@@ -82,6 +82,7 @@ class DatasusSIHService(DatasusService):
         """Download SIH data from the DATASUS FTP. Skips files that already exist in the download folder."""
         if not self.download_folder:
             return
+        self._download_status_list.clear()
         folder = Path(self.download_folder)
         folder.mkdir(parents=True, exist_ok=True)
         uris = self._build_datasus_uris()
@@ -89,9 +90,19 @@ class DatasusSIHService(DatasusService):
             filename = Path(urlparse(uri).path).name
             local_path = folder / filename
             if local_path.exists():
+                self._download_status_list.append(
+                    FileDownloadStatusDTO(filename, "exists")
+                )
+                print(f"File {filename} already exists.")
                 continue
             try:
                 urllib.request.urlretrieve(uri, str(local_path))
+                self._download_status_list.append(
+                    FileDownloadStatusDTO(filename, "success")
+                )
                 print(f"Downloading {filename}... [OK]")
             except OSError:
+                self._download_status_list.append(
+                    FileDownloadStatusDTO(filename, "error")
+                )
                 print(f"Downloading {filename}... [ERROR]")

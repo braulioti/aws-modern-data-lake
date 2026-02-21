@@ -3,6 +3,8 @@ DATASUS FTP service.
 """
 from abc import ABC, abstractmethod
 
+from dtos import FileDownloadStatusDTO
+
 
 class DatasusService(ABC):
     """
@@ -26,6 +28,7 @@ class DatasusService(ABC):
         self._ftp_url = ftp_url.strip().rstrip("/")
         self._download_path = download_path
         self._download_folder = download_folder
+        self._download_status_list: list[FileDownloadStatusDTO] = []
 
     @property
     def ftp_url(self) -> str:
@@ -36,6 +39,11 @@ class DatasusService(ABC):
     def download_folder(self) -> str | None:
         """Local folder where files will be downloaded."""
         return self._download_folder
+
+    @property
+    def download_status_list(self) -> list[FileDownloadStatusDTO]:
+        """List of download results (filename + status: ignored, error, success)."""
+        return self._download_status_list
 
     @abstractmethod
     def download(self) -> None:
