@@ -12,8 +12,10 @@ All notable changes to this project will be documented in this file.
 - Created file download structure for SIH DATASUS files (skip existing files, download to temp folder, print status [OK]/[ERROR]).
 - Created converters: DBCConverter (DBC to DBF) and DBFConverter (DBF to CSV); integrated into main pipeline with temp paths from env.
 - Added Docker support: Dockerfile, docker-compose, env precedence over .env, default config values, unbuffered logs.
-- Created ECR repository (sih-sus-repo) on AWS via CloudFormation using CDK stack DatalakeInfrastructureStack.
+- Created ECR repository (sih-sus-repo) on AWS via CloudFormation using CDK stack SIHRepositoryStack.
 - Added GitHub Actions workflow to build and push Docker image to ECR when a version tag (v*) is created.
+- **Infrastructure (CDK):** DatalakeInfrastructureStack with VPC, S3 bucket, ECS Fargate cluster, Fargate task definition (CPU/memory configurable), IAM task role with S3 read/write permissions, CloudWatch Logs for the task; task environment variables include period, states, and AWS_S3_BUCKET (bucket name).
+- **S3 integration:** Python `integration` package with `AWSIntegration` and `send_to_s3_bucket`; `AWS_S3_BUCKET` in EnvLoader and .env; pipeline uploads all converted CSV files to the S3 bucket (prefix `raw/sih/`) after DBC→DBF→CSV conversion.
 
 ### Documentation
 

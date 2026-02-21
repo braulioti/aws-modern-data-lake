@@ -20,7 +20,9 @@ public class AwsInfrastructureApp {
                     .build());
         }
 
-        new DatalakeInfrastructureStack(app, "DatalakeInfrastructureStack", stackPropsBuilder.build());
+        StackProps stackProps = stackPropsBuilder.build();
+        SIHRepositoryStack repoStack = new SIHRepositoryStack(app, "SIHRepositoryStack", stackProps);
+        new DatalakeInfrastructureStack(app, "DatalakeInfrastructureStack", stackProps, repoStack.getRepository());
 
         app.synth();
     }

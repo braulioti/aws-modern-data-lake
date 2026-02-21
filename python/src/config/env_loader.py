@@ -18,6 +18,7 @@ _DEFAULTS = {
     "END_YEAR": "2023",
     "END_MONTH": "10",
     "STATES": "SP,RJ,MG",
+    "AWS_S3_BUCKET": "datalake-bucket",
 }
 
 
@@ -115,3 +116,8 @@ class EnvLoader:
         if not raw or not raw.strip():
             return []
         return [s.strip().upper() for s in raw.split(",") if s.strip()]
+
+    @property
+    def aws_s3_bucket(self) -> str:
+        """Return the AWS S3 bucket name for the data lake."""
+        return self._get("AWS_S3_BUCKET")
