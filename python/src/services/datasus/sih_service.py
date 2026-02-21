@@ -2,7 +2,7 @@
 SIH (Sistema de Informações Hospitalares) service for DATASUS FTP.
 """
 
-from ftplib import FTP, error_perm as ftp_error_perm
+import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -35,9 +35,10 @@ class DatasusSIHService(DatasusService):
         """
         super().__init__(
             ftp_url,
-            download_path="/dissemin/publicos/SIHSUS",  # base; per-month path is {aamm}_/Dados
+            download_path="/dissemin/publicos/SIHSUS/200801_/Dados",
             download_folder=download_folder,
         )
+        self._base_ftp_path = "/dissemin/publicos/SIHSUS"
         self._params = params
 
     @property
@@ -80,59 +81,31 @@ class DatasusSIHService(DatasusService):
 
         return uris
 
-    def _ftp_host(self) -> str:
-        """Extract FTP host from ftp_url (e.g. ftp://ftp.datasus.gov.br -> ftp.datasus.gov.br)."""
-        parsed = urlparse(self.ftp_url if "://" in self.ftp_url else "ftp://" + self.ftp_url)
-        return parsed.hostname or parsed.path or "ftp.datasus.gov.br"
-
-    def _remote_dir_for(self, filename: str) -> str:
-        """
-        DATASUS SIH path per month: SIHSUS/{AAMM}_/Dados.
-        Filename format: RD{UF}{AAMM}.dbc -> AAMM at index 4:8 (e.g. RDSP2601 -> 2601).
-        """
-        if len(filename) >= 8 and filename.lower().endswith(".dbc"):
-            aamm = filename[4:8]
-            base = (self._download_path or "").strip().rstrip("/")
-            return f"{base}/{aamm}_/Dados" if base else f"{aamm}_/Dados"
-        base = (self._download_path or "").strip().rstrip("/")
-        return f"{base}/Dados" if base else "Dados"
-
     def download(self) -> None:
-        """Download SIH data from the DATASUS FTP via ftplib. Skips files that already exist."""
+        """Download SIH data from the DATASUS FTP. Skips files that already exist. Uses full URI per file (path per month)."""
         if not self.download_folder:
             return
         self._download_status_list.clear()
         folder = Path(self.download_folder)
         folder.mkdir(parents=True, exist_ok=True)
         uris = self._build_datasus_uris()
-        if not uris:
-            return
-        host = self._ftp_host()
-        try:
-            with FTP(host, timeout=FTP_TIMEOUT) as ftp:
-                ftp.login()
-                for uri in uris:
-                    filename = Path(urlparse(uri).path).name
-                    local_path = folder / filename
-                    if local_path.exists():
-                        self._download_status_list.append(
-                            FileDownloadStatusDTO(filename, "exists")
-                        )
-                        print(f"File {filename} already exists.")
-                        continue
-                    try:
-                        remote_dir = self._remote_dir_for(filename)
-                        ftp.cwd(remote_dir)
-                        with open(local_path, "wb") as f:
-                            ftp.retrbinary(f"RETR {filename}", f.write)
-                        self._download_status_list.append(
-                            FileDownloadStatusDTO(filename, "success")
-                        )
-                        print(f"Downloading {filename}... [OK]")
-                    except (OSError, ftp_error_perm) as e:
-                        self._download_status_list.append(
-                            FileDownloadStatusDTO(filename, "error")
-                        )
-                        print(f"Downloading {filename}... [ERROR] ({e})")
-        except OSError as e:
-            print(f"FTP connection failed: {e}")
+        for uri in uris:
+            filename = Path(urlparse(uri).path).name
+            local_path = folder / filename
+            if local_path.exists():
+                self._download_status_list.append(FileDownloadStatusDTO(filename, "exists"))
+                print(f"File {filename} already exists.")
+                continue
+            try:
+                with urllib.request.urlopen(uri, timeout=FTP_TIMEOUT) as response:
+                    with open(local_path, "wb") as out_file:
+                        while True:
+                            chunk = response.read(1024 * 1024)
+                            if not chunk:
+                                break
+                            out_file.write(chunk)
+                self._download_status_list.append(FileDownloadStatusDTO(filename, "success"))
+                print(f"Downloading {filename}... [OK]")
+            except OSError as e:
+                self._download_status_list.append(FileDownloadStatusDTO(filename, "error"))
+                print(f"Downloading {filename}... [ERROR] ({e})")
