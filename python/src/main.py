@@ -48,11 +48,11 @@ def main() -> None:
         )
         datasus_sih_service.download()
 
-        #if loader.temp_dbc_path and loader.temp_dbf_path:
-         #   DBCConverter.to_dbf(loader.temp_dbc_path, loader.temp_dbf_path)
+        if loader.temp_dbc_path and loader.temp_dbf_path:
+            DBCConverter.to_dbf(loader.temp_dbc_path, loader.temp_dbf_path)
 
-        #if loader.temp_dbf_path and loader.temp_csv_path:
-       #     DBFConverter.to_csv(loader.temp_dbf_path, loader.temp_csv_path)
+        if loader.temp_dbf_path and loader.temp_csv_path:
+            DBFConverter.to_csv(loader.temp_dbf_path, loader.temp_csv_path)
 
         upload_csv_to_s3(loader.temp_csv_path, loader.aws_s3_bucket)
 
