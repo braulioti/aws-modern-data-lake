@@ -1,1 +1,6 @@
+### Python Files ###
+python/tmp
+venv
+
+### IDE ###
 .idea
