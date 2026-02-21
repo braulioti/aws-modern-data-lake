@@ -3,4 +3,3 @@ boto3>=1.34.0
 python-dotenv>=1.0.0
 dbc-to-dbf>=1.0.0
 dbfread>=2.0.0
-pandas>=2.0.0
