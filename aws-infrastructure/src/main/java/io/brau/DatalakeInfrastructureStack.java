@@ -21,6 +21,8 @@ import software.amazon.awscdk.services.s3.Bucket;
 
 public class DatalakeInfrastructureStack extends Stack {
 
+    private final Vpc vpc;
+
     private static final String VPC_NAME = "datalake-vpc";
     private static final String BUCKET_NAME = "braulioti-datalake-bucket";
     private static final String CLUSTER_NAME = "datalake-cluster";
@@ -42,7 +44,7 @@ public class DatalakeInfrastructureStack extends Stack {
     public DatalakeInfrastructureStack(final Construct scope, final String id, final StackProps props, final IRepository ecrRepository) {
         super(scope, id, props);
 
-        Vpc vpc = Vpc.Builder.create(this, "DatalakeVPC")
+        this.vpc = Vpc.Builder.create(this, "DatalakeVPC")
                 .vpcName(VPC_NAME)
                 .build();
 
@@ -58,7 +60,7 @@ public class DatalakeInfrastructureStack extends Stack {
 
         Cluster.Builder.create(this, "DatalakeCluster")
                 .clusterName(CLUSTER_NAME)
-                .vpc(vpc)
+                .vpc(this.vpc)
                 .build();
 
         LogGroup logGroup = LogGroup.Builder.create(this, "SihSusLogGroup")
@@ -83,5 +85,9 @@ public class DatalakeInfrastructureStack extends Stack {
                         .streamPrefix("sih-sus")
                         .build()))
                 .build());
+    }
+
+    public Vpc getVpc() {
+        return vpc;
     }
 }

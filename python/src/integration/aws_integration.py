@@ -46,6 +46,27 @@ class AWSIntegration:
         """S3 client for the current session and config."""
         return self.session.client("s3", config=self._config)
 
+    def list_s3_bucket(self, bucket: str, prefix: str = "") -> list[str]:
+        """
+        List object keys (file names) in an S3 bucket.
+
+        Args:
+            bucket: S3 bucket name.
+            prefix: Optional prefix to filter keys (e.g. "raw/sih/").
+
+        Returns:
+            List of object keys (strings) that exist in the bucket under the given prefix.
+        """
+        s3 = self.s3_client()
+        keys: list[str] = []
+        paginator = s3.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                key = obj.get("Key")
+                if key:
+                    keys.append(key)
+        return keys
+
     def send_to_s3_bucket(
         self,
         bucket: str,

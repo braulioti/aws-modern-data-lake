@@ -4,7 +4,7 @@ DTO for file download status.
 
 from typing import Literal
 
-DownloadStatus = Literal["exists", "error", "success"]
+DownloadStatus = Literal["exists", "error", "success", "ignored"]
 
 
 class FileDownloadStatusDTO:

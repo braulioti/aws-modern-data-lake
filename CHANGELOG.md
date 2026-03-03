@@ -16,7 +16,9 @@ All notable changes to this project will be documented in this file.
 - Added GitHub Actions workflow to build and push Docker image to ECR when a version tag (v*) is created.
 - **Infrastructure (CDK):** DatalakeInfrastructureStack with VPC, S3 bucket, ECS Fargate cluster, Fargate task definition (CPU/memory configurable), IAM task role with S3 read/write permissions, CloudWatch Logs for the task; task environment variables include period, states, and AWS_S3_BUCKET (bucket name).
 - **S3 integration:** Python `integration` package with `AWSIntegration` and `send_to_s3_bucket`; `AWS_S3_BUCKET` in EnvLoader and .env; pipeline uploads all converted CSV files to the S3 bucket (prefix `raw/sih/`) after DBC→DBF→CSV conversion.
+- **Pipeline avoids re-download:** `AWSIntegration.list_s3_bucket` lists object keys in the bucket (optional prefix). `DatasusService`/`DatasusSIHService` gain an `ignore_files` property (array of file names to skip). In `main`, the list of CSVs in S3 (`raw/sih/`) is converted to `.dbc` names and passed as `ignore_files`, so the `.dbc` file is not downloaded when the corresponding CSV already exists in S3.
 
 ### Documentation
 
 - Added README section "Architectural Model" with architecture diagram image (docs/architecture.png).
+- Updated architecture design documentation.

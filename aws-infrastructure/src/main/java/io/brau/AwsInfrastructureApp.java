@@ -22,7 +22,8 @@ public class AwsInfrastructureApp {
 
         StackProps stackProps = stackPropsBuilder.build();
         SIHRepositoryStack repoStack = new SIHRepositoryStack(app, "SIHRepositoryStack", stackProps);
-        new DatalakeInfrastructureStack(app, "DatalakeInfrastructureStack", stackProps, repoStack.getRepository());
+        DatalakeInfrastructureStack datalakeStack = new DatalakeInfrastructureStack(app, "DatalakeInfrastructureStack", stackProps, repoStack.getRepository());
+        new DatabaseStack(app, "DatabaseStack", stackProps, datalakeStack.getVpc());
 
         app.synth();
     }

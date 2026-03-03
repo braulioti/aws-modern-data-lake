@@ -24,6 +24,7 @@ class DatasusSIHService(DatasusService):
         ftp_url: str,
         params: DatasusSIHDTO,
         download_folder: str | None = None,
+        ignore_files: list[str] | None = None,
     ) -> None:
         """
         Initialize the SIH service with the FTP URL, SIH parameters and download folder.
@@ -32,11 +33,13 @@ class DatasusSIHService(DatasusService):
             ftp_url: Full URL or host of the DATASUS FTP (e.g. ftp://ftp.datasus.gov.br).
             params: DTO with period and state filters (start/end year-month, states).
             download_folder: Local folder where files will be downloaded.
+            ignore_files: List of file names to skip (e.g. ["RDSP202501.dbc"]).
         """
         super().__init__(
             ftp_url,
             download_path="/dissemin/publicos/SIHSUS/200801_/Dados",
             download_folder=download_folder,
+            ignore_files=ignore_files,
         )
         self._base_ftp_path = "/dissemin/publicos/SIHSUS"
         self._params = params
@@ -91,6 +94,10 @@ class DatasusSIHService(DatasusService):
         uris = self._build_datasus_uris()
         for uri in uris:
             filename = Path(urlparse(uri).path).name
+            if filename in self.ignore_files:
+                self._download_status_list.append(FileDownloadStatusDTO(filename, "ignored"))
+                print(f"File {filename} ignored (in ignore_files).")
+                continue
             local_path = folder / filename
             if local_path.exists():
                 self._download_status_list.append(FileDownloadStatusDTO(filename, "exists"))
