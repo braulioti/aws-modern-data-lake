@@ -4,19 +4,18 @@ Script that reads the .env file and uses the FTP_DATASUS attribute.
 from pathlib import Path
 
 from config import EnvLoader
-from converter import DBCConverter, DBFConverter
 from dtos import DatasusSIHDTO
-from integration import AWSIntegration
-from services.datasus import DatasusSIHService
+from integration import AWSIntegration, DatasusIntegration
 
 
 S3_RAW_SIH_PREFIX = "raw/sih/"
+S3_RAW_IBGE_PREFIX = "raw/ibge-municipios/"
 
 
 def files_already_in_s3(bucket: str | None) -> list[str]:
     """
     Lista CSVs em S3 (raw/sih/), troca a extensão para .dbc e retorna essa lista
-    para ignore_files. Assim não baixamos o .dbc se o CSV já existir no S3.
+    para ignore_files_sih. Assim não baixamos o .dbc se o CSV já existir no S3.
     Ex.: raw/sih/RDSP202501.csv no S3 -> retorna ["RDSP202501.dbc"] para ignorar.
     """
     if not bucket:
@@ -32,8 +31,12 @@ def files_already_in_s3(bucket: str | None) -> list[str]:
     return ignore_dbc
 
 
-def upload_csv_to_s3(csv_path: str | None, bucket: str | None) -> None:
-    """Upload all CSV files from the given directory to the S3 bucket under raw/sih/."""
+def upload_csv_to_s3(
+    csv_path: str | None,
+    bucket: str | None,
+    prefix: str = S3_RAW_SIH_PREFIX,
+) -> None:
+    """Upload all CSV files from the given directory to the S3 bucket under the given prefix."""
     if not csv_path or not bucket:
         return
     csv_dir = Path(csv_path)
@@ -41,7 +44,7 @@ def upload_csv_to_s3(csv_path: str | None, bucket: str | None) -> None:
         return
     aws = AWSIntegration()
     for csv_file in csv_dir.glob("*.csv"):
-        key = f"{S3_RAW_SIH_PREFIX}{csv_file.name}"
+        key = f"{prefix}{csv_file.name}"
         uri = aws.send_to_s3_bucket(
             bucket, key, str(csv_file), content_type="text/csv"
         )
@@ -63,22 +66,25 @@ def main() -> None:
     )
 
     if loader.ftp_datasus:
-        ignore_files = files_already_in_s3(loader.aws_s3_bucket)
-        datasus_sih_service = DatasusSIHService(
-            loader.ftp_datasus,
-            params=sih_dto,
-            download_folder=loader.temp_dbc_path,
-            ignore_files=ignore_files,
+        ignore_files_sih = files_already_in_s3(loader.aws_s3_bucket)
+        datasus = DatasusIntegration(loader.ftp_datasus)
+        datasus.process_datasus(
+            sih_dto,
+            loader.temp_dbc_path,
+            ignore_files_sih=ignore_files_sih,
+            temp_dbf_path=loader.temp_dbf_path,
+            temp_csv_path=loader.temp_csv_path,
+            temp_zip_folder=loader.temp_zip_folder if loader.process_ibge else None,
+            temp_zip_extract_folder=loader.temp_zip_extract_folder if loader.process_ibge else None,
+            csv_ibge_folder=loader.csv_ibge_folder if loader.process_ibge else None,
         )
-        datasus_sih_service.download()
-
-        if loader.temp_dbc_path and loader.temp_dbf_path:
-            DBCConverter.to_dbf(loader.temp_dbc_path, loader.temp_dbf_path)
-
-        if loader.temp_dbf_path and loader.temp_csv_path:
-            DBFConverter.to_csv(loader.temp_dbf_path, loader.temp_csv_path)
-
         upload_csv_to_s3(loader.temp_csv_path, loader.aws_s3_bucket)
+        if loader.process_ibge:
+            upload_csv_to_s3(
+                loader.csv_ibge_folder,
+                loader.aws_s3_bucket,
+                prefix=S3_RAW_IBGE_PREFIX,
+            )
 
 
 if __name__ == "__main__":

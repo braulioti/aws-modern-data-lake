@@ -13,6 +13,10 @@ _DEFAULTS = {
     "TEMP_DBC_PATH": "../tmp/dbc",
     "TEMP_DBF_PATH": "../tmp/dbf",
     "TEMP_CSV_PATH": "../tmp/csv",
+    "TEMP_ZIP_FOLDER": "../tmp/zip",
+    "TEMP_ZIP_EXTRACT_FOLDER": "../tmp/extract",
+    "CSV_IBGE_FOLDER": "../tmp/csv_ibge",
+    "PROCESS_IBGE": "false",
     "START_YEAR": "2023",
     "START_MONTH": "1",
     "END_YEAR": "2023",
@@ -83,6 +87,27 @@ class EnvLoader:
     def temp_csv_path(self) -> str:
         """Return the temporary folder path for converted CSV files."""
         return self._get("TEMP_CSV_PATH")
+
+    @property
+    def temp_zip_folder(self) -> str:
+        """Return the temporary folder path for ZIP files."""
+        return self._get("TEMP_ZIP_FOLDER")
+
+    @property
+    def temp_zip_extract_folder(self) -> str:
+        """Return the temporary folder path for extracted ZIP contents."""
+        return self._get("TEMP_ZIP_EXTRACT_FOLDER")
+
+    @property
+    def csv_ibge_folder(self) -> str:
+        """Return the folder path for IBGE CSV files (e.g. MUNICIPIOS.CSV)."""
+        return self._get("CSV_IBGE_FOLDER")
+
+    @property
+    def process_ibge(self) -> bool:
+        """Return True if IBGE files should be fetched and uploaded to S3 (PROCESS_IBGE=true/1/yes)."""
+        raw = self._get("PROCESS_IBGE").strip().lower()
+        return raw in ("true", "1", "yes")
 
     @property
     def start_year(self) -> str:

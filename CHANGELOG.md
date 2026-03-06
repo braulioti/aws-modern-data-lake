@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - **S3 integration:** Python `integration` package with `AWSIntegration` and `send_to_s3_bucket`; `AWS_S3_BUCKET` in EnvLoader and .env; pipeline uploads all converted CSV files to the S3 bucket (prefix `raw/sih/`) after DBC→DBF→CSV conversion.
 - **Pipeline avoids re-download:** `AWSIntegration.list_s3_bucket` lists object keys in the bucket (optional prefix). `DatasusService`/`DatasusSIHService` gain an `ignore_files` property (array of file names to skip). In `main`, the list of CSVs in S3 (`raw/sih/`) is converted to `.dbc` names and passed as `ignore_files`, so the `.dbc` file is not downloaded when the corresponding CSV already exists in S3.
 - **Glue ETL (CDK):** ETLGlueStack with Glue Data Catalog database for comma-separated CSV (`datalake_csv`), Glue Crawler reading from S3 prefix `raw/sih/`, CSV classifier (comma delimiter, header present), and IAM role with S3 read, CloudWatch Logs write, and Glue Data Catalog read/write permissions.
+- **Municipalities table:** IBGE pipeline (TAB_POP.zip download, extract, CNV→CSV with CNVCitySchema), MUNICIPIOS.CSV output; optional `PROCESS_IBGE` env to upload to S3 `raw/ibge/`; Glue Crawler for `raw/ibge/` populating `datalake_csv` with the municipalities table.
 
 ### Documentation
 
