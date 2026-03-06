@@ -23,3 +23,4 @@ All notable changes to this project will be documented in this file.
 
 - Added README section "Architectural Model" with architecture diagram image (docs/architecture.png).
 - Updated architecture design documentation.
+- Created data dictionary for SIH/SUS (AIH Reduzida) at docs/dicionario-dados/DD_SIH.md.
