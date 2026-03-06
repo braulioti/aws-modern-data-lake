@@ -25,6 +25,8 @@ public class ETLGlueStack extends Stack {
     private static final String CRAWLER_NAME = "sih-sus-csv-crawler";
     private static final String MUNICIPIOS_CRAWLER_NAME = "municipios-csv-crawler";
     private static final String UF_CRAWLER_NAME = "uf-csv-crawler";
+    private static final String SIGTAP_CRAWLER_NAME = "sigtap-csv-crawler";
+    private static final String CID10_CRAWLER_NAME = "cid10-csv-crawler";
     private static final String CRAWLER_ROLE_NAME = "datalake-glue-crawler-role";
     private static final String CSV_CLASSIFIER_NAME = "csv-comma";
     /** S3 prefix where SIH CSV files are stored. */
@@ -33,6 +35,10 @@ public class ETLGlueStack extends Stack {
     private static final String CSV_IBGE_MUNICIPIOS_PREFIX = "raw/ibge-municipios/";
     /** S3 prefix where IBGE UF CSV files are stored (e.g. UF.CSV). */
     private static final String CSV_IBGE_UF_PREFIX = "raw/ibge-uf/";
+    /** S3 prefix where SIGTAP CSV files are stored (e.g. TB_SIGTAP.CSV). */
+    private static final String CSV_SIGTAP_PREFIX = "raw/sigtap/";
+    /** S3 prefix where CID10 CSV files are stored (e.g. CID10.CSV). */
+    private static final String CSV_CID10_PREFIX = "raw/cid10/";
 
     public ETLGlueStack(final Construct scope, final String id, final IBucket dataLakeBucket) {
         this(scope, id, null, dataLakeBucket);
@@ -126,6 +132,34 @@ public class ETLGlueStack extends Stack {
                 .targets(CfnCrawler.TargetsProperty.builder()
                         .s3Targets(List.of(CfnCrawler.S3TargetProperty.builder()
                                 .path(s3PathUf)
+                                .build()))
+                        .build())
+                .build();
+
+        // Crawler that reads SIGTAP CSV files (e.g. TB_SIGTAP.CSV) from S3 into the same datalake_csv database
+        String s3PathSigtap = "s3://" + dataLakeBucket.getBucketName() + "/" + CSV_SIGTAP_PREFIX;
+        CfnCrawler.Builder.create(this, "SigtapCsvCrawler")
+                .name(SIGTAP_CRAWLER_NAME)
+                .role(crawlerRole.getRoleArn())
+                .databaseName(GLUE_DATABASE_NAME)
+                .classifiers(List.of(CSV_CLASSIFIER_NAME))
+                .targets(CfnCrawler.TargetsProperty.builder()
+                        .s3Targets(List.of(CfnCrawler.S3TargetProperty.builder()
+                                .path(s3PathSigtap)
+                                .build()))
+                        .build())
+                .build();
+
+        // Crawler that reads CID10 CSV files (e.g. CID10.CSV) from S3 into the same datalake_csv database
+        String s3PathCid10 = "s3://" + dataLakeBucket.getBucketName() + "/" + CSV_CID10_PREFIX;
+        CfnCrawler.Builder.create(this, "Cid10CsvCrawler")
+                .name(CID10_CRAWLER_NAME)
+                .role(crawlerRole.getRoleArn())
+                .databaseName(GLUE_DATABASE_NAME)
+                .classifiers(List.of(CSV_CLASSIFIER_NAME))
+                .targets(CfnCrawler.TargetsProperty.builder()
+                        .s3Targets(List.of(CfnCrawler.S3TargetProperty.builder()
+                                .path(s3PathCid10)
                                 .build()))
                         .build())
                 .build();

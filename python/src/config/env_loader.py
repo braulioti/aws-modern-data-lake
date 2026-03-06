@@ -17,6 +17,8 @@ _DEFAULTS = {
     "TEMP_ZIP_EXTRACT_FOLDER": "../tmp/extract",
     "CSV_IBGE_MUNICIPIOS_FOLDER": "../tmp/csv_ibge",
     "CSV_IBGE_UF_FOLDER": "../tmp/csv_ibge_uf",
+    "CSV_IBGE_SIGTAP_FOLDER": "../tmp/csv_sigtap",
+    "CSV_IBGE_CID10_FOLDER": "../tmp/csv_cid10",
     "PROCESS_IBGE": "false",
     "START_YEAR": "2023",
     "START_MONTH": "1",
@@ -108,6 +110,16 @@ class EnvLoader:
     def csv_ibge_uf_folder(self) -> str:
         """Return the folder path for IBGE UF (state) CSV files."""
         return self._get("CSV_IBGE_UF_FOLDER")
+
+    @property
+    def csv_ibge_sigtap_folder(self) -> str:
+        """Return the folder path for IBGE SIGTAP CSV files."""
+        return self._get("CSV_IBGE_SIGTAP_FOLDER")
+
+    @property
+    def csv_ibge_cid10_folder(self) -> str:
+        """Return the folder path for CID10 CSV files."""
+        return self._get("CSV_IBGE_CID10_FOLDER")
 
     @property
     def process_ibge(self) -> bool:

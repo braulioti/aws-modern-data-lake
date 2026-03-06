@@ -20,6 +20,11 @@ All notable changes to this project will be documented in this file.
 - **Glue ETL (CDK):** ETLGlueStack with Glue Data Catalog database for comma-separated CSV (`datalake_csv`), Glue Crawler reading from S3 prefix `raw/sih/`, CSV classifier (comma delimiter, header present), and IAM role with S3 read, CloudWatch Logs write, and Glue Data Catalog read/write permissions.
 - **Municipalities table:** IBGE pipeline (TAB_POP.zip download, extract, CNV→CSV with CNVMunicipioSchema), MUNICIPIOS.CSV output; optional `PROCESS_IBGE` env to upload to S3 `raw/ibge-municipios/`; Glue Crawler for `raw/ibge-municipios/` populating `datalake_csv` with the municipalities table.
 - **UF (Unidades Federativas):** IBGE pipeline also converts `br_uf.cnv` to UF.CSV (CNVUFSchema); upload to S3 `raw/ibge-uf/` when `PROCESS_IBGE` is enabled; Glue Crawler for `raw/ibge-uf/` populating `datalake_csv` with the UF table.
+- **DatasusIntegration refactor:** `DatasusIntegration(EnvLoader)`; `process_datasus()` with no arguments (reads all paths and options from loader); `upload_ibge_csv_to_s3(loader)` moved to main as separate function; ignore list for SIH built inside integration from S3 (`raw/sih/`).
+- **Converters naming:** folder-based methods renamed to include `_folder` (e.g. `DBCConverter.to_dbf_folder`, `DBFConverter.to_csv_folder`); `DBFConverter.to_csv` added for single-file DBF→CSV conversion.
+- **CIH (Centro de Informação em Saúde):** `DatasusCIHService` downloads TAB_CIH.zip from `/dissemin/publicos/CIH/200801_201012/Auxiliar`; `process_cih` in DatasusIntegration downloads to zip folder and extracts to extract folder; runs before `run_converters` so extract contains auxiliary DBFs.
+- **SIGTAP:** `run_converters` converts `extract/TB_SIGTAP.DBF` to CSV in `CSV_IBGE_SIGTAP_FOLDER` (env `CSV_IBGE_SIGTAP_FOLDER`, default `../tmp/csv_sigtap`); upload to S3 `raw/sigtap/`; Glue Crawler `sigtap-csv-crawler` for `raw/sigtap/` in `datalake_csv`.
+- **CID10:** `run_converters` converts `extract/CID10.DBF` to CSV in `CSV_IBGE_CID10_FOLDER` (env `CSV_IBGE_CID10_FOLDER`, default `../tmp/csv_cid10`); upload to S3 `raw/cid10/`; Glue Crawler `cid10-csv-crawler` for `raw/cid10/` in `datalake_csv`.
 
 ### Documentation
 

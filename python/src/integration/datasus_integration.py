@@ -13,12 +13,20 @@ if TYPE_CHECKING:
 
 from cnv_schemas import CNVMunicipioSchema, CNVUFSchema
 from converter import CNVConverter, DBCConverter, DBFConverter, ZipConverter
-from services.datasus import DatasusIBGEService, DatasusSIHService
+from services.datasus import DatasusCIHService, DatasusIBGEService, DatasusSIHService
 
 from integration.aws_integration import AWSIntegration
 
 # S3 prefix for SIH CSV (used to build ignore_files_sih from existing objects)
 S3_RAW_SIH_PREFIX = "raw/sih/"
+# CIH ZIP filename (downloaded to zip folder, extracted to extract folder)
+CIH_ZIP_FILENAME = "TAB_CIH.zip"
+# SIGTAP DBF file (inside extract folder) and output CSV name
+SIGTAP_DBF_FILENAME = "TB_SIGTAP.DBF"
+SIGTAP_CSV_FILENAME = "TB_SIGTAP.CSV"
+# CID10 DBF file (inside extract folder) and output CSV name
+CID10_DBF_FILENAME = "CID10.DBF"
+CID10_CSV_FILENAME = "CID10.CSV"
 # CNV municip file path relative to extract folder; output filename
 CNV_MUNICIP_REL_PATH = "CNV/br_municip.cnv"
 MUNICIPIOS_CSV_FILENAME = "MUNICIPIOS.CSV"
@@ -89,19 +97,69 @@ class DatasusIntegration:
         temp_dbc_path: str | None,
         temp_dbf_path: str | None,
         temp_csv_path: str | None,
+        temp_zip_extract_folder: str | None = None,
+        csv_ibge_sigtap_folder: str | None = None,
+        csv_ibge_cid10_folder: str | None = None,
     ) -> None:
         """
-        Run DBC -> DBF -> CSV conversion pipeline (SIH).
+        Run DBC -> DBF -> CSV conversion pipeline (SIH), and optionally convert TB_SIGTAP.DBF and CID10.DBF from extract to their CSV folders.
 
         Args:
             temp_dbc_path: Folder with DBC files (input).
             temp_dbf_path: Folder for DBF output (and input to CSV step).
             temp_csv_path: Folder for CSV output.
+            temp_zip_extract_folder: Folder where ZIPs were extracted (e.g. contains TB_SIGTAP.DBF, CID10.DBF).
+            csv_ibge_sigtap_folder: Folder where TB_SIGTAP.CSV will be written.
+            csv_ibge_cid10_folder: Folder where CID10.CSV will be written.
         """
         if temp_dbc_path and temp_dbf_path:
-            DBCConverter.to_dbf(temp_dbc_path, temp_dbf_path)
+            DBCConverter.to_dbf_folder(temp_dbc_path, temp_dbf_path)
         if temp_dbf_path and temp_csv_path:
-            DBFConverter.to_csv(temp_dbf_path, temp_csv_path)
+            DBFConverter.to_csv_folder(temp_dbf_path, temp_csv_path)
+        if temp_zip_extract_folder and csv_ibge_sigtap_folder:
+            sigtap_dbf = Path(temp_zip_extract_folder) / SIGTAP_DBF_FILENAME
+            sigtap_csv = Path(csv_ibge_sigtap_folder) / SIGTAP_CSV_FILENAME
+            if sigtap_dbf.is_file():
+                try:
+                    Path(csv_ibge_sigtap_folder).mkdir(parents=True, exist_ok=True)
+                    DBFConverter.to_csv(sigtap_dbf, sigtap_csv)
+                except (FileNotFoundError, Exception) as e:
+                    print(f"Error converting {SIGTAP_DBF_FILENAME} to {SIGTAP_CSV_FILENAME}: {e}")
+        if temp_zip_extract_folder and csv_ibge_cid10_folder:
+            cid10_dbf = Path(temp_zip_extract_folder) / CID10_DBF_FILENAME
+            cid10_csv = Path(csv_ibge_cid10_folder) / CID10_CSV_FILENAME
+            if cid10_dbf.is_file():
+                try:
+                    Path(csv_ibge_cid10_folder).mkdir(parents=True, exist_ok=True)
+                    DBFConverter.to_csv(cid10_dbf, cid10_csv)
+                except (FileNotFoundError, Exception) as e:
+                    print(f"Error converting {CID10_DBF_FILENAME} to {CID10_CSV_FILENAME}: {e}")
+
+    def process_cih(
+        self,
+        temp_zip_folder: str | None = None,
+        temp_zip_extract_folder: str | None = None,
+    ) -> None:
+        """
+        Download TAB_CIH.zip to the zip folder and extract it to the extract folder.
+
+        Args:
+            temp_zip_folder: Folder where TAB_CIH.zip will be downloaded.
+            temp_zip_extract_folder: Destination folder for extracted contents.
+        """
+        if temp_zip_folder:
+            cih_service = DatasusCIHService(
+                ftp_url=self._ftp_url,
+                download_folder=temp_zip_folder,
+            )
+            cih_service.download()
+        if temp_zip_folder and temp_zip_extract_folder:
+            cih_zip = Path(temp_zip_folder) / CIH_ZIP_FILENAME
+            if cih_zip.is_file():
+                try:
+                    ZipConverter.extract(cih_zip, temp_zip_extract_folder)
+                except (FileNotFoundError, Exception) as e:
+                    print(f"Error extracting {CIH_ZIP_FILENAME}: {e}")
 
     def process_ibge(
         self,
@@ -219,11 +277,18 @@ class DatasusIntegration:
             ignore_files_sih=ignore_files_sih,
         )
         service.download()
+        self.process_cih(
+            temp_zip_folder=loader.temp_zip_folder,
+            temp_zip_extract_folder=loader.temp_zip_extract_folder,
+        )
         if loader.temp_dbc_path and loader.temp_dbf_path and loader.temp_csv_path:
             self.run_converters(
                 loader.temp_dbc_path,
                 loader.temp_dbf_path,
                 loader.temp_csv_path,
+                temp_zip_extract_folder=loader.temp_zip_extract_folder,
+                csv_ibge_sigtap_folder=loader.csv_ibge_sigtap_folder,
+                csv_ibge_cid10_folder=loader.csv_ibge_cid10_folder,
             )
         self.process_ibge(
             temp_zip_folder=loader.temp_zip_folder if loader.process_ibge else None,

@@ -10,6 +10,8 @@ from integration import AWSIntegration, DatasusIntegration
 S3_RAW_SIH_PREFIX = "raw/sih/"
 S3_RAW_IBGE_MUNICIPIOS_PREFIX = "raw/ibge-municipios/"
 S3_RAW_IBGE_UF_PREFIX = "raw/ibge-uf/"
+S3_RAW_SIGTAP_PREFIX = "raw/sigtap/"
+S3_RAW_CID10_PREFIX = "raw/cid10/"
 
 
 def upload_csv_to_s3(
@@ -58,6 +60,16 @@ def main() -> None:
         datasus = DatasusIntegration(loader)
         datasus.process_datasus()
         upload_csv_to_s3(loader.temp_csv_path, loader.aws_s3_bucket)
+        upload_csv_to_s3(
+            loader.csv_ibge_sigtap_folder,
+            loader.aws_s3_bucket,
+            prefix=S3_RAW_SIGTAP_PREFIX,
+        )
+        upload_csv_to_s3(
+            loader.csv_ibge_cid10_folder,
+            loader.aws_s3_bucket,
+            prefix=S3_RAW_CID10_PREFIX,
+        )
         upload_ibge_csv_to_s3(loader)
 
 

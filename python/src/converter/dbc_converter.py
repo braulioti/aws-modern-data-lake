@@ -14,7 +14,7 @@ class DBCConverter:
     """
 
     @staticmethod
-    def to_dbf(dbc_folder: str | Path, dest_folder: str | Path) -> list[Path]:
+    def to_dbf_folder(dbc_folder: str | Path, dest_folder: str | Path) -> list[Path]:
         """
         Convert all DBC files in the given folder to DBF format.
 
