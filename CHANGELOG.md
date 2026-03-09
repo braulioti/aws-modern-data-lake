@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - **CIH (Centro de Informação em Saúde):** `DatasusCIHService` downloads TAB_CIH.zip from `/dissemin/publicos/CIH/200801_201012/Auxiliar`; `process_cih` in DatasusIntegration downloads to zip folder and extracts to extract folder; runs before `run_converters` so extract contains auxiliary DBFs.
 - **SIGTAP:** `run_converters` converts `extract/TB_SIGTAP.DBF` to CSV in `CSV_IBGE_SIGTAP_FOLDER` (env `CSV_IBGE_SIGTAP_FOLDER`, default `../tmp/csv_sigtap`); upload to S3 `raw/sigtap/`; Glue Crawler `sigtap-csv-crawler` for `raw/sigtap/` in `datalake_csv`.
 - **CID10:** `run_converters` converts `extract/CID10.DBF` to CSV in `CSV_IBGE_CID10_FOLDER` (env `CSV_IBGE_CID10_FOLDER`, default `../tmp/csv_cid10`); upload to S3 `raw/cid10/`; Glue Crawler `cid10-csv-crawler` for `raw/cid10/` in `datalake_csv`.
+- **Glue ETL Jobs to RDS:** Created `ETLGlueJobStack` with Glue Jobs to load data from Glue Data Catalog into PostgreSQL RDS dev instance via NETWORK connection. `sih-sus-job` loads SIH data (recreates table on each run). `dimensions-job` loads `dim_ibge_municipios`, `dim_ibge_uf`, `dim_sigtap` and `dim_cid10` only if they do not exist, and creates the primary key for each table.
 
 ### Documentation
 
