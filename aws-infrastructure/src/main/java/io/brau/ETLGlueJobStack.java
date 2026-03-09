@@ -64,8 +64,9 @@ public class ETLGlueJobStack extends Stack {
         String connectionName = "rds-datalake-dev-network";
         String jdbcUrl = "jdbc:postgresql://" + rdsDevInstance.getDbInstanceEndpointAddress() + ":"
                 + rdsDevInstance.getDbInstanceEndpointPort() + "/datalake";
+        // Use PUBLIC subnets (no NAT cost); Glue has internet and can reach RDS in public subnet
         var selectedSubnets = vpc.selectSubnets(SubnetSelection.builder()
-                .subnetType(SubnetType.PRIVATE_WITH_EGRESS)
+                .subnetType(SubnetType.PUBLIC)
                 .build());
         List<String> subnetIds = selectedSubnets.getSubnetIds();
         ISubnet firstSubnet = selectedSubnets.getSubnets().get(0);

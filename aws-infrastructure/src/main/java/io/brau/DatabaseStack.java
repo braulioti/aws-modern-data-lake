@@ -47,7 +47,8 @@ public class DatabaseStack extends Stack {
                 .credentials(credentials)
                 .databaseName(DB_NAME)
                 .vpc(vpc)
-                .vpcSubnets(SubnetSelection.builder().subnetType(SubnetType.PRIVATE_WITH_EGRESS).build())
+                // Isolated subnets (no NAT); use DatabasePublicStack for dev if you need public RDS
+                .vpcSubnets(SubnetSelection.builder().subnetType(SubnetType.PRIVATE_ISOLATED).build())
                 .instanceType(InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO))
                 .allocatedStorage(20)
                 .publiclyAccessible(false)

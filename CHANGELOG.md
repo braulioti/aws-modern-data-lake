@@ -27,6 +27,10 @@ All notable changes to this project will be documented in this file.
 - **CID10:** `run_converters` converts `extract/CID10.DBF` to CSV in `CSV_IBGE_CID10_FOLDER` (env `CSV_IBGE_CID10_FOLDER`, default `../tmp/csv_cid10`); upload to S3 `raw/cid10/`; Glue Crawler `cid10-csv-crawler` for `raw/cid10/` in `datalake_csv`.
 - **Glue ETL Jobs to RDS:** Created `ETLGlueJobStack` with Glue Jobs to load data from Glue Data Catalog into PostgreSQL RDS dev instance via NETWORK connection. `sih-sus-job` loads SIH data (recreates table on each run). `dimensions-job` loads `dim_ibge_municipios`, `dim_ibge_uf`, `dim_sigtap` and `dim_cid10` only if they do not exist, and creates the primary key for each table.
 
+### Bugfix
+
+- **VPC / NAT Gateways:** Adjusted CDK for environments without NAT Gateways (to avoid cost). DatalakeInfrastructureStack keeps VPC with `natGateways(0)` without changing subnet configuration (to prevent CloudFormation update rollback). ETLGlueJobStack now uses **PUBLIC** subnets for the Glue connection (Glue has internet access and can reach RDS in public subnet). DatabaseStack now uses **PRIVATE_ISOLATED** subnets instead of `PRIVATE_WITH_EGRESS`, so the private RDS stack works when the VPC has only Public and Isolated subnets. Fixes validation error "There are no 'Private' subnet groups in this VPC".
+
 ### Documentation
 
 - Added README section "Architectural Model" with architecture diagram image (docs/architecture.png).

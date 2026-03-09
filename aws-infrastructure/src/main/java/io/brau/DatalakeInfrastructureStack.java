@@ -45,8 +45,10 @@ public class DatalakeInfrastructureStack extends Stack {
     public DatalakeInfrastructureStack(final Construct scope, final String id, final StackProps props, final IRepository ecrRepository) {
         super(scope, id, props);
 
+        // natGateways(0) = no NAT cost; existing VPC may have Public + Isolated subnets (do not change VPC here to avoid rollback)
         this.vpc = Vpc.Builder.create(this, "DatalakeVPC")
                 .vpcName(VPC_NAME)
+                .natGateways(0)
                 .build();
 
         this.bucket = Bucket.Builder.create(this, "DatalakeBucketSih")
