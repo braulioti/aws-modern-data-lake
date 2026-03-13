@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.X.0] - 2026-02-21
+## [1.0.0] - 2026-03-13
 
 **AWS Modern Datalake** is a modern data lake architecture on AWS. It uses S3, Glue ETL, Athena, and BI tooling with raw, trusted, and refined layers. The Python module supports ingesting public health data from DATASUS (e.g. SIH — Hospital Information System) via FTP, configurable via environment variables.
 

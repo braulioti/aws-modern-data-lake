@@ -1,4 +1,4 @@
-# AWS Modern Datalake - Version: 0.1.0
+# AWS Modern Datalake - Version: 1.0.0
 
 [![X: @_brau_io](https://img.shields.io/badge/contact-@_brau_io-blue.svg?style=flat)](https://x.com/_brau_io)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=fff)](https://www.docker.com/)
